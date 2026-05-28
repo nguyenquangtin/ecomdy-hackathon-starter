@@ -4,7 +4,7 @@
   "private": true,
   "description": "MVP starter kit cho Ecomdy AI Hackathon 2026 - NestJS + React goi Ecomdy Marketing API",
   "scripts": {
-    "install:all": "npm install --prefix backend && npm install --prefix frontend",
+    "install:all": "npm install && npm install --prefix backend && npm install --prefix frontend",
     "dev": "concurrently -n backend,frontend -c blue,green \"npm:dev:backend\" \"npm:dev:frontend\"",
     "dev:backend": "npm run start:dev --prefix backend",
     "dev:frontend": "npm run dev --prefix frontend"

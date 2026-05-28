@@ -22,7 +22,7 @@ React (port 5173)  -->  NestJS proxy (port 3000)  -->  Ecomdy API (api.ecomdy.co
 
 - **Node.js 18+** (chạy `node -v` để kiểm tra)
 - **API key Ecomdy** dạng `wl_live_xxxxxxxx`, lấy từ [Partner Portal](https://account.ecomdy.co) → API Keys → Create new key
-- **~50 credits** để test (1 call `/video/generate` tốn 10 credits)
+- **~100 credits** để test (1 call `/video/generate` tốn 10 credits)
 
 ---
 
