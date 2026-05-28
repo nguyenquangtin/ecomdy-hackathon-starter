@@ -5,13 +5,15 @@ import { VideoService } from './video.service';
 export class VideoController {
   constructor(private video: VideoService) {}
 
-  // POST /api/video/generate  body: { prompt: string }
+  // POST /api/video/generate  body: { prompt: string, image_url?: string, engine?: string, ... }
+  // Pass through nguyen body de support image-to-video / engine selection cua Ecomdy
   @Post('generate')
-  generate(@Body('prompt') prompt: string) {
+  generate(@Body() body: Record<string, any>) {
+    const prompt = body?.prompt;
     if (!prompt || typeof prompt !== 'string' || prompt.trim().length === 0) {
-      throw new BadRequestException('Prompt khong duoc rong');
+      throw new BadRequestException('Prompt is required');
     }
-    return this.video.generate(prompt.trim());
+    return this.video.generate({ ...body, prompt: prompt.trim() });
   }
 
   // GET /api/video/jobs/:id

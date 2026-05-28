@@ -5,12 +5,13 @@ const API = import.meta.env.VITE_API_URL;
 
 export default function VideoGenerator() {
   const [prompt, setPrompt] = useState('');
+  const [imageUrl, setImageUrl] = useState('');
   const [status, setStatus] = useState('idle'); // idle | creating | pending | processing | completed | failed
   const [videoUrl, setVideoUrl] = useState(null);
   const [error, setError] = useState(null);
   const timerRef = useRef(null);
 
-  // Cleanup polling khi component unmount
+  // Cleanup polling on unmount
   useEffect(() => () => clearInterval(timerRef.current), []);
 
   async function handleGenerate() {
@@ -18,10 +19,13 @@ export default function VideoGenerator() {
     setVideoUrl(null);
     setStatus('creating');
 
-    try {
-      const { data: job } = await axios.post(`${API}/api/video/generate`, { prompt });
+    // Ecomdy default engine (Symphony) requires both prompt and image_url
+    const body = { prompt, image_url: imageUrl.trim() };
 
-      // Poll moi 3 giay cho toi khi status = completed
+    try {
+      const { data: job } = await axios.post(`${API}/api/video/generate`, body);
+
+      // Poll every 3 seconds until status = completed
       timerRef.current = setInterval(async () => {
         try {
           const { data: j } = await axios.get(`${API}/api/video/jobs/${job.id}`);
@@ -30,7 +34,9 @@ export default function VideoGenerator() {
             setVideoUrl(j.output_url);
             clearInterval(timerRef.current);
           } else if (j.status === 'failed') {
-            setError('Tao video that bai. Thu lai voi prompt khac.');
+            // Surface the real error message from Ecomdy (e.g. "image_url is required for Symphony")
+            const reason = j.error?.message || j.error?.code || 'Video generation failed. Try a different prompt.';
+            setError(reason);
             clearInterval(timerRef.current);
           }
         } catch (err) {
@@ -48,23 +54,34 @@ export default function VideoGenerator() {
 
   return (
     <div className="generator">
-      <label htmlFor="prompt">Mo ta video ban muon tao:</label>
+      <label htmlFor="prompt">Describe the video you want to create:</label>
       <textarea
         id="prompt"
         value={prompt}
         onChange={(e) => setPrompt(e.target.value)}
-        placeholder="VD: TikTok ad for running shoes, young athlete, urban setting..."
+        placeholder="e.g. TikTok ad for running shoes, young athlete, urban setting..."
         rows={4}
         disabled={isBusy}
       />
 
-      <button onClick={handleGenerate} disabled={isBusy || !prompt.trim()}>
-        {isBusy ? `Dang xu ly... (${status})` : 'Tao video'}
+      <label htmlFor="image_url">Image URL (required):</label>
+      <input
+        id="image_url"
+        type="url"
+        value={imageUrl}
+        onChange={(e) => setImageUrl(e.target.value)}
+        placeholder="https://..."
+        disabled={isBusy}
+        required
+      />
+
+      <button onClick={handleGenerate} disabled={isBusy || !prompt.trim() || !imageUrl.trim()}>
+        {isBusy ? `Processing... (${status})` : 'Generate video'}
       </button>
 
       {error && (
         <div className="error">
-          <strong>Loi:</strong> {error}
+          <strong>Error:</strong> {error}
         </div>
       )}
 
@@ -72,7 +89,7 @@ export default function VideoGenerator() {
         <div className="result">
           <video src={videoUrl} controls autoPlay />
           <a href={videoUrl} download className="download">
-            Tai video ve
+            Download video
           </a>
         </div>
       )}

@@ -131,7 +131,6 @@ Khi debug:
 - **API docs:** https://api.ecomdy.co/docs
 - **Partner Portal:** https://account.ecomdy.co
 - **Support:** support@ecomdy.co
-- **Discord:** discord.gg/ecomdy
 
 ---
 

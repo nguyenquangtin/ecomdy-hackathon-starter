@@ -3,7 +3,7 @@
   --surface: #111E33;
   --text: #E6EDF7;
   --muted: #8FA3C7;
-  --accent: #00D4FF;
+  --accent: #FF003B;
   --accent-green: #10F5A1;
   --red: #FF4D6D;
   --border: rgba(255, 255, 255, 0.08);
@@ -25,9 +25,21 @@ body {
   padding: 48px 24px;
 }
 
+.title-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 0 0 4px;
+}
+.logo {
+  width: 40px;
+  height: 40px;
+  object-fit: contain;
+  flex-shrink: 0;
+}
 header h1 {
   font-size: 32px;
-  margin: 0 0 4px;
+  margin: 0;
   letter-spacing: -0.02em;
 }
 .muted { color: var(--muted); margin: 0 0 32px; font-size: 14px; }
@@ -62,7 +74,7 @@ textarea:disabled { opacity: 0.5; }
 button {
   padding: 14px 18px;
   background: var(--accent);
-  color: var(--bg);
+  color: #fff;
   border: none;
   border-radius: 8px;
   font-size: 15px;
