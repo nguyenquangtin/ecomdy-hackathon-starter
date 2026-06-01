@@ -23,7 +23,7 @@ The proxy stays a pass-through; DB writes are side-effects layered onto the two 
 ### 1. Add Prisma
 - Deps: `@prisma/client` (dependency), `prisma` (devDependency).
 - Add `"postinstall": "prisma generate"` to `backend/package.json` so the client builds after `npm run install:all`.
-- `backend/.env` + `.env.example`: add `DATABASE_URL="file:./data/jobs.db"`.
+- `backend/.env` + `.env.example`: add `DATABASE_URL="file:./data/jobs.db"`. Prisma resolves SQLite relative paths from the schema dir, so the file lands at `backend/prisma/data/jobs.db`.
 - `backend/.gitignore`: ignore `*.db`, `*.db-journal`. Keep `/prisma/migrations` (commit migrations).
 
 ### 2. `backend/prisma/schema.prisma` (new)

@@ -1,0 +1,21 @@
+// Prisma schema - SQLite store for video generation job history (MVP)
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+// Mot dong cho moi lan generate video. id = job_id tu Ecomdy.
+model VideoJob {
+  id        String   @id // Ecomdy job_id
+  prompt    String
+  imageUrl  String?
+  status    String // pending | processing | completed | failed
+  outputUrl String?
+  error     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}

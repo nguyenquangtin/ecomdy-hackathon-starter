@@ -3,7 +3,7 @@ import axios from 'axios';
 
 const API = import.meta.env.VITE_API_URL;
 
-export default function VideoGenerator() {
+export default function VideoGenerator({ onJobChange }) {
   const [prompt, setPrompt] = useState('');
   const [imageUrl, setImageUrl] = useState('');
   const [status, setStatus] = useState('idle'); // idle | creating | pending | processing | completed | failed
@@ -24,6 +24,7 @@ export default function VideoGenerator() {
 
     try {
       const { data: job } = await axios.post(`${API}/api/video/generate`, body);
+      onJobChange?.(); // new pending job logged -> refresh history
 
       // Poll every 3 seconds until status = completed
       timerRef.current = setInterval(async () => {
@@ -33,11 +34,13 @@ export default function VideoGenerator() {
           if (j.status === 'completed') {
             setVideoUrl(j.output_url);
             clearInterval(timerRef.current);
+            onJobChange?.(); // status transitioned -> refresh history
           } else if (j.status === 'failed') {
             // Surface the real error message from Ecomdy (e.g. "image_url is required for Symphony")
             const reason = j.error?.message || j.error?.code || 'Video generation failed. Try a different prompt.';
             setError(reason);
             clearInterval(timerRef.current);
+            onJobChange?.(); // status transitioned -> refresh history
           }
         } catch (err) {
           setError(err.response?.data?.message || err.message);

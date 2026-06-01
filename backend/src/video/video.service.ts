@@ -1,10 +1,16 @@
-import { Injectable, HttpException } from '@nestjs/common';
+import { Injectable, HttpException, Logger } from '@nestjs/common';
 import { HttpService } from '@nestjs/axios';
 import { firstValueFrom } from 'rxjs';
+import { PrismaService } from '../prisma/prisma.service';
 
 @Injectable()
 export class VideoService {
-  constructor(private http: HttpService) {}
+  private readonly logger = new Logger(VideoService.name);
+
+  constructor(
+    private http: HttpService,
+    private prisma: PrismaService,
+  ) {}
 
   // Doc env trong runtime (sau khi ConfigModule load .env), khong phai luc import file
   private get base() {
@@ -27,7 +33,11 @@ export class VideoService {
         ),
       );
       const d = res.data.data ?? res.data;
-      return { ...d, id: d.job_id ?? d.id, status: String(d.status || '').toLowerCase() };
+      const job = { ...d, id: d.job_id ?? d.id, status: String(d.status || '').toLowerCase() };
+
+      // Log job vao DB (best-effort: loi DB khong duoc lam vo flow generate)
+      await this.logCreate(job.id, body, job.status);
+      return job;
     } catch (err) {
       this.rethrow(err, 'generate');
     }
@@ -41,9 +51,51 @@ export class VideoService {
         this.http.get(`${this.base}/jobs/${id}`, { headers: this.auth }),
       );
       const d = res.data.data ?? res.data;
-      return { ...d, status: String(d.status || '').toLowerCase() };
+      const job = { ...d, status: String(d.status || '').toLowerCase() };
+
+      // Cap nhat trang thai + output vao DB (best-effort)
+      await this.logUpdate(id, job);
+      return job;
     } catch (err) {
       this.rethrow(err, 'getJob');
+    }
+  }
+
+  // List 50 job moi nhat cho History panel
+  listJobs() {
+    return this.prisma.videoJob.findMany({
+      orderBy: { createdAt: 'desc' },
+      take: 50,
+    });
+  }
+
+  // --- DB helpers (best-effort: chi log warning khi loi, khong throw) ---
+
+  private async logCreate(id: string, body: Record<string, any>, status: string) {
+    try {
+      await this.prisma.videoJob.create({
+        data: { id, prompt: body.prompt, imageUrl: body.image_url ?? null, status },
+      });
+    } catch (e: any) {
+      this.logger.warn(`logCreate failed for ${id}: ${e.message}`);
+    }
+  }
+
+  private async logUpdate(id: string, job: Record<string, any>) {
+    const data = {
+      status: job.status,
+      outputUrl: job.output_url ?? null,
+      error: job.error?.message ?? (typeof job.error === 'string' ? job.error : null),
+    };
+    try {
+      // upsert: phong khi row chua ton tai (vd backend restart giua chung)
+      await this.prisma.videoJob.upsert({
+        where: { id },
+        update: data,
+        create: { id, prompt: job.prompt ?? '', ...data },
+      });
+    } catch (e: any) {
+      this.logger.warn(`logUpdate failed for ${id}: ${e.message}`);
     }
   }
 

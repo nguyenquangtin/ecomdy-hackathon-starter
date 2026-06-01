@@ -16,6 +16,12 @@ export class VideoController {
     return this.video.generate({ ...body, prompt: prompt.trim() });
   }
 
+  // GET /api/video/jobs  -> lich su job (khai bao TRUOC jobs/:id de khong bi :id bat nham)
+  @Get('jobs')
+  listJobs() {
+    return this.video.listJobs();
+  }
+
   // GET /api/video/jobs/:id
   @Get('jobs/:id')
   getJob(@Param('id') id: string) {
