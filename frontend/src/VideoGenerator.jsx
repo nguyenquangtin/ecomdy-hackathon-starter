@@ -37,7 +37,8 @@ export default function VideoGenerator({ onJobChange }) {
             onJobChange?.(); // status transitioned -> refresh history
           } else if (j.status === 'failed') {
             // Surface the real error message from Ecomdy (e.g. "image_url is required for Symphony")
-            const reason = j.error?.message || j.error?.code || 'Video generation failed. Try a different prompt.';
+            // Spec: failed VideoJob carries flat `error_message`; keep legacy fallbacks for safety
+            const reason = j.error_message || j.error?.message || j.error?.code || 'Video generation failed. Try a different prompt.';
             setError(reason);
             clearInterval(timerRef.current);
             onJobChange?.(); // status transitioned -> refresh history

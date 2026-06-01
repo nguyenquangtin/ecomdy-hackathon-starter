@@ -1,22 +1,27 @@
-import { useState } from 'react';
-import VideoGenerator from './VideoGenerator.jsx';
-import JobHistory from './job-history.jsx';
+import { Routes, Route, Link, NavLink } from 'react-router-dom';
+import Dashboard from './dashboard.jsx';
+import CreatePage from './create.jsx';
+import JobDetail from './job-detail.jsx';
 
 export default function App() {
-  // Bump refresh de JobHistory refetch moi khi co job moi / doi trang thai
-  const [refresh, setRefresh] = useState(0);
-
   return (
     <div className="page">
       <header>
-        <div className="title-row">
+        <Link to="/" className="title-row">
           <img src="/logo.png" alt="Ecomdy" className="logo" />
           <h1>AI Video Generator</h1>
-        </div>
-        <p className="muted">Ecomdy Marketing API - Hackathon Starter</p>
+        </Link>
+        <nav className="nav">
+          <NavLink to="/" end className="nav-link">Dashboard</NavLink>
+          <NavLink to="/create" className="nav-link">Create</NavLink>
+        </nav>
       </header>
-      <VideoGenerator onJobChange={() => setRefresh((n) => n + 1)} />
-      <JobHistory refreshKey={refresh} />
+
+      <Routes>
+        <Route path="/" element={<Dashboard />} />
+        <Route path="/create" element={<CreatePage />} />
+        <Route path="/jobs/:id" element={<JobDetail />} />
+      </Routes>
     </div>
   );
 }

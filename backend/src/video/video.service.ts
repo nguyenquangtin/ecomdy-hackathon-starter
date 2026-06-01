@@ -85,7 +85,8 @@ export class VideoService {
     const data = {
       status: job.status,
       outputUrl: job.output_url ?? null,
-      error: job.error?.message ?? (typeof job.error === 'string' ? job.error : null),
+      // Spec: failed VideoJob carries flat `error_message`; keep legacy shapes as fallback
+      error: job.error_message ?? job.error?.message ?? (typeof job.error === 'string' ? job.error : null),
     };
     try {
       // upsert: phong khi row chua ton tai (vd backend restart giua chung)
